@@ -1,3 +1,6 @@
+// Comment out or remove this part
+
+/*
 import Layout from "../components/layout";
 import React from 'react';
 import { useTable, useSortBy } from 'react-table';
@@ -83,7 +86,7 @@ export async function getServerSideProps() {
 
 
 export default CanadianCustomers;
-
+*/
 
 
 
