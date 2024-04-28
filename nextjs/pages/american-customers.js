@@ -3,9 +3,11 @@ import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
 const AmericanCustomers = ({ data }) => {
+    console.log("data: " + data);
     const ref = useRef();
 
     useEffect(() => {
+        console.log("ref: " + ref.current);
         if (data.length > 0) {
             const svg = d3.select(ref.current);
             svg.selectAll("*").remove();
@@ -23,7 +25,8 @@ const AmericanCustomers = ({ data }) => {
             const y = d3.scaleBand()
                 .domain(data.map(d => d.city))
                 .range([margin.top, height - margin.bottom])
-                .padding(0.1);
+                .paddingInner(0.1)
+                .paddingOuter(0.1);
 
             svg.append("g")
                 .attr("fill", "steelblue")
@@ -55,10 +58,18 @@ const AmericanCustomers = ({ data }) => {
 }
 
 export async function getServerSideProps() {
-    const response = await fetch('http://localhost:8000/american-customers-by-city/');
-    const data = await response.json();
-
-    return { props: { data } };
+    try {
+        const response = await fetch('http://fastapi:8000/american-customers-by-city/');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("Fetched data:", data);
+        return { props: { data } };
+    } catch (error) {
+        console.error("Failed to fetch American customers:", error);
+        return { props: { data: [], error: error.message } };
+    }
 }
 
 export default AmericanCustomers;

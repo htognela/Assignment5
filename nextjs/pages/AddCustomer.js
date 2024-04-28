@@ -6,8 +6,8 @@ const AddCustomer = () => {
         firstName: '',
         lastName: '',
         email: '',
-        city: '',
-        movieTitle: '',
+        address_id: '',
+        inventoryId: '',
         dateOfRental: ''
     });
 
@@ -21,9 +21,50 @@ const AddCustomer = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(formData); // Debug output to console
-        alert('Customer and rental details added!'); // Placeholder action
-        setFormData({ firstName: '', lastName: '', email: '', city: '', movieTitle: '', dateOfRental: '' }); // Reset form
+
+        const customerData = {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+            address_id: formData.address_id,
+        };
+
+        try {
+            // First, add the customer
+            const customerResponse = await fetch('http://localhost:8000/add-customer/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(customerData)
+            });
+            const customerResult = await customerResponse.json();
+            if (!customerResponse.ok) {
+                throw new Error(customerResult.message || 'Failed to add customer');
+            }
+
+            // If the customer is added successfully, rent the videos
+            const rentalData = {
+                customer_id: customerResult.customer_id, // Assuming the customer ID is returned after adding
+                inventory_ids: [parseInt(formData.inventoryId)] // Assuming you handle the inventory ID directly
+            };
+
+            const rentalResponse = await fetch('http://localhost:8000/rent-videos/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(rentalData)
+            });
+            const rentalResult = await rentalResponse.json();
+            if (!rentalResponse.ok) {
+                throw new Error(rentalResult.message || 'Failed to rent videos');
+            }
+
+            alert('Customer and rental added successfully!');
+            console.log(rentalResult);
+            setFormData({ firstName: '', lastName: '', email: '', address_id: '', inventoryId: '', dateOfRental: '' });
+
+        } catch (error) {
+            console.error('Failed to process transaction:', error);
+            alert(error.message);
+        }
     };
 
     return (
@@ -34,8 +75,8 @@ const AddCustomer = () => {
                     <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} className="input-field" />
                     <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleChange} className="input-field" />
                     <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} className="input-field" />
-                    <input type="text" name="city" placeholder="City" value={formData.city} onChange={handleChange} className="input-field" />
-                    <input type="text" name="movieTitle" placeholder="Movie Title" value={formData.movieTitle} onChange={handleChange} className="input-field" />
+                    <input type="text" name="address_id" placeholder="Address ID" value={formData.address_id} onChange={handleChange} className="input-field" />
+                    <input type="text" name="inventoryId" placeholder="Inventory ID" value={formData.inventoryId} onChange={handleChange} className="input-field" />
                     <input type="date" name="dateOfRental" value={formData.dateOfRental} onChange={handleChange} className="input-field" />
                     <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                         Submit Details
