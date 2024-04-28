@@ -7,6 +7,7 @@ WORKDIR /app
 # Install any needed packages specified in package.json
 RUN npm cache clean --force
 RUN npm install
+RUN npm install d3
 RUN npm run build
 
 EXPOSE 3000
